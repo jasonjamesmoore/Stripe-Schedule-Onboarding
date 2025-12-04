@@ -45,6 +45,8 @@ import type { Plan } from "@/features/payments/stripe/shared/plan";
 
 //  Stripe payment step
 import { PaymentStep } from "@/features/payments/stripe/client/PaymentStep";
+import { SubscriptionResults } from "@/features/payments/stripe/client/SubscriptionResults";
+import { DemoGuide } from "@/components/demo/DemoGuide";
 
 const steps = [
   "Billing & Contact Information",
@@ -96,6 +98,10 @@ export function PersonalOnboardForm() {
   const pendingBillingSnapshot = useRef<
     FormValues["addresses"]["billing"] | null
   >(null);
+
+  // Track subscription ID after successful payment
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
 
   const form = useForm<FormValues, WizardContext>({
     resolver: stepResolver,
@@ -735,7 +741,11 @@ export function PersonalOnboardForm() {
               plan={selectedPlan}
               services={services ?? []}
               canPay={Boolean(agreed) && serviceCount > 0}
-              onSuccess={() => setStep(3 as Step)}
+              onSuccess={(subId, custId) => {
+                setSubscriptionId(subId || null);
+                setCustomerId(custId || null);
+                setStep(3 as Step);
+              }}
               account="individual"
             />
             <Separator />
@@ -772,42 +782,13 @@ export function PersonalOnboardForm() {
 
         {/* ===== STEP 4: Success / Thank you ===== */}
         {step === 3 && (
-          <div className="mx-auto max-w-xl text-center space-y-6 py-10">
-            <div className="text-2xl font-semibold">🎉 Payment Successful</div>
-            <p className="text-muted-foreground">
-              Thanks! Your subscription is active. We’ll start service on your
-              property’s trash collection schedule.
-              {/* <span className="font-medium">{email || "your email"}</span>. */}
-            </p>
-
-            <div className="grid gap-3">
-              {/* <Button
-                className="bg-[#254B58] text-[#FCCF86]"
-                type="button"
-                onClick={() => {
-                  // optional: route users somewhere useful
-                  // e.g., router.push("/account") or close modal
-                  // For now, just keep them here.
-                }}
-              >
-                Go to My Account
-              </Button>
-
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => {
-                  // optional: start a new onboarding flow or go home
-                  // e.g., router.push("/")
-                }}
-              >
-                Back to Home
-              </Button> */}
-            </div>
+          <div className="mx-auto max-w-3xl space-y-6">
+            <SubscriptionResults
+              subscriptionId={subscriptionId || undefined}
+              customerId={customerId || undefined}
+            />
           </div>
         )}
-
-        {/* Wizard controls */}
         {step !== 3 && ( // hide all controls on the success screen
           <div className="flex items-center justify-between pt-4">
             {/* Back */}
@@ -884,6 +865,9 @@ export function PersonalOnboardForm() {
           </div>
         )}
       </form>
+      
+      {/* Demo Guide - visible throughout */}
+      <DemoGuide />
     </Form>
   );
 }

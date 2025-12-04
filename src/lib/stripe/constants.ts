@@ -4,4 +4,4 @@ export const PRORATION_BEHAVIOR =
     | "none"
     | "always_invoice") ?? "create_prorations";
 
-export const NINETY_DAYS_SEC = 90 * 24 * 60 * 60;
+export const NINETY_DAYS_SEC = 180 * 24 * 60 * 60; // 180 days (6 months) for demo purposes

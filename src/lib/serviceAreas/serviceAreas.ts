@@ -31,26 +31,17 @@ export const AREA_RULES: AreaRule[] = [
     baseDay: DOW.Mon, // Mon
     secondaryDay: DOW.Thu, // Thurs
     season: {
-      startUTC: Date.UTC(2025, 4, 26, 0, 0, 0) / 1000, // May 26, 2025 00:00 UTC
-      endUTC: Date.UTC(2025, 8, 1, 0, 0, 0) / 1000, // Sept 1, 2025 00:00 UTC
+      startUTC: Date.UTC(2025, 10, 1, 0, 0, 0) / 1000, // Nov 1, 2025 00:00 UTC (CURRENTLY IN SEASON)
+      endUTC: Date.UTC(2026, 2, 1, 0, 0, 0) / 1000, // March 1, 2026 00:00 UTC
     },
   },
-  // {
-  //   city: "South Surf City",
-  //   baseDay: DOW.Mon, // Mon
-  //   secondaryDay: DOW.Fri, // Fri
-  //   season: {
-  //     startUTC: Date.UTC(2025, 4, 1, 0, 0, 0) / 1000, // May 1
-  //     endUTC: Date.UTC(2025, 8, 30, 0, 0, 0) / 1000, // Sept 30
-  //   },
-  // },
   {
     city: "Surf City",
     baseDay: DOW.Tue, // Tues
     secondaryDay: DOW.Fri, // Fri
     season: {
-      startUTC: Date.UTC(2025, 4, 1, 0, 0, 0) / 1000, // May 1
-      endUTC: Date.UTC(2025, 8, 30, 0, 0, 0) / 1000, // Sept 30
+      startUTC: Date.UTC(2025, 9, 15, 0, 0, 0) / 1000, // Oct 15, 2025 (CURRENTLY IN SEASON)
+      endUTC: Date.UTC(2026, 1, 28, 0, 0, 0) / 1000, // Feb 28, 2026
     },
   },
   {
@@ -58,8 +49,8 @@ export const AREA_RULES: AreaRule[] = [
     baseDay: DOW.Wed,
     secondaryDay: DOW.Sat,
     season: {
-      startUTC: Date.UTC(2025, 4, 2, 0, 0, 0) / 1000,
-      endUTC: Date.UTC(2025, 9, 26, 0, 0, 0) / 1000,
+      startUTC: Date.UTC(2026, 3, 1, 0, 0, 0) / 1000, // April 1, 2026 (OUT OF SEASON - future)
+      endUTC: Date.UTC(2026, 8, 30, 0, 0, 0) / 1000, // Sept 30, 2026
     },
   },
   {

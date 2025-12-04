@@ -8,8 +8,8 @@ export type AccountType = "individual" | "business";
 
 export const PRICE_BY_PLAN: Record<AccountType, Record<Plan, string>> = {
   individual: {
-    trash: "price_1SEEJ902heDK9w4zW4O0taqq",
-    seasonal_2nd: "price_1SEEJv02heDK9w4zus2PQtCK"
+    trash: "price_1S184RIr0MMYHEqPhw5fJ8IG",
+    seasonal_2nd: "price_1S3JWNIr0MMYHEqPjtUJqjdn"
   },
   business: {
    trash: "price_1SEEKZ02heDK9w4zWLUKNrPi",

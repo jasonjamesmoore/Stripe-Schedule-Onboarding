@@ -16,10 +16,13 @@ export function seasonWindowsForAddress(
   const rule = resolveRuleForAddress(address);
   if (!rule || !rule.season) return [];
   const { startUTC, endUTC } = rule.season;
-  // If refEpoch is before endUTC, return current season window
+  
+  // Return the season window if it hasn't ended yet (includes current and future windows)
   if (refEpoch < endUTC) {
     return [{ start: startUTC, end: endUTC }];
   }
-  // Optionally, roll forward one year for annual seasons (not implemented here)
+  
+  // Season has already ended - could roll forward for recurring seasons
+  // For now, return empty array for past seasons
   return [];
 }

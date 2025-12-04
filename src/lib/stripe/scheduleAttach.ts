@@ -4,6 +4,8 @@ import {
   type AccountType,
 } from "@/features/payments/stripe/server/prices";
 import { buildSeasonalTimeline, readAddrRulesFromMeta } from "@/lib/stripe/phaseBuilder";
+import { NINETY_DAYS_SEC } from "./constants";
+import { nextMonthFirstEpoch } from "../date/utcMonth";
 
 type PhaseUpdate = Stripe.SubscriptionScheduleUpdateParams.Phase & {
   iterations?: number;
@@ -19,10 +21,32 @@ export async function ensureScheduleAttached(subId: string, stripe: Stripe) {
   const sub = await stripe.subscriptions.retrieve(subId, {
     expand: ["schedule"],
   });
-  if (sub.metadata?.schedule_attached === "1" || sub.schedule) {
-    console.log("[WH] schedule already attached, skipping");
+  
+  // If schedule already exists, don't rebuild it - preserve what was created during signup
+  if (sub.schedule) {
+    const scheduleId = typeof sub.schedule === "string" ? sub.schedule : sub.schedule.id;
+    const schedule = await stripe.subscriptionSchedules.retrieve(scheduleId);
+    console.log("[WH] schedule already exists:", scheduleId, "with", schedule.phases?.length, "phases - skipping rebuild");
+    
+    // Just mark as attached if not already
+    if (sub.metadata?.schedule_attached !== "1") {
+      await stripe.subscriptions.update(subId, {
+        metadata: {
+          ...sub.metadata,
+          schedule_attached: "1",
+          schedule_id: scheduleId,
+        },
+      });
+    }
     return;
   }
+  
+  if (sub.metadata?.schedule_attached === "1") {
+    console.log("[WH] schedule already attached per metadata, skipping");
+    return;
+  }
+  
+  console.log("[WH] No schedule found, creating via webhook");
   await upsertScheduleFromSubscription(subId, stripe);
 }
 
@@ -106,33 +130,88 @@ export async function upsertScheduleFromSubscription(
       }
     }
   }
-  // Check if user actually selected seasonal service
-  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
-  let userSelectedSeasonal = false;
+  // Check if user actually selected seasonal service by looking at addr_rules
+  // If any address has a secondary day (s != -1), they selected seasonal service
+  const userSelectedSeasonal = initialAddrRules.some((rule) => rule.s !== -1);
+  console.log("[WH] User selected seasonal service:", userSelectedSeasonal);
+
+  // Get the current phase start date
+  const currentStart = preservedCurrent && typeof preservedCurrent.start_date === "number"
+    ? preservedCurrent.start_date
+    : Math.floor(Date.now() / 1000);
+
+  // Build the complete timeline just like signup does
+  // This creates slices at every month boundary within seasonal windows
+  const windows: Array<{ start: number; end: number }> = [];
   
-  if (customerId) {
-    try {
-      const customer = await stripe.customers.retrieve(customerId);
-      if (customer && !customer.deleted && customer.metadata) {
-        // Check for service_addresses metadata
-        const serviceAddressesJson = customer.metadata.service_addresses || 
-                                    customer.metadata.service_addresses_1 || "[]";
-        const serviceAddresses = JSON.parse(serviceAddressesJson);
-        userSelectedSeasonal = serviceAddresses.some((addr: { seasonal_selected?: boolean }) => addr.seasonal_selected === true);
-        console.log("[WH] User selected seasonal service:", userSelectedSeasonal);
+  if (userSelectedSeasonal) {
+    // Extract all seasonal windows from addr_rules
+    for (const rule of initialAddrRules) {
+      if (rule.s !== -1 && rule.ss > 0 && rule.se > rule.ss) {
+        windows.push({ start: rule.ss, end: rule.se });
       }
-    } catch (err) {
-      console.warn("[WH] Could not retrieve customer seasonal selections:", err);
     }
   }
 
-  // Build timeline segments from addrRules and current phase start
-  // Only create seasonal segments if user actually selected seasonal service
-  const segments = preservedCurrent && typeof preservedCurrent.start_date === "number" && userSelectedSeasonal
-    ? buildSeasonalTimeline(initialAddrRules, preservedCurrent.start_date)
-    : [];
-  // Convert segments to phases
-  const phases: PhaseUpdate[] = segments.map((seg, idx) => {
+  console.log("[WH] Found seasonal windows:", windows.length);
+
+  let segments: Array<{ start: number; end: number; qty: number }> = [];
+
+  if (windows.length > 0) {
+    const rawEdges = windows.flatMap((w) => [w.start, w.end]);
+    const minStart = Math.min(...windows.map((w) => w.start));
+    const maxEnd = Math.max(...windows.map((w) => w.end));
+    
+    console.log("[WH] Window range:", new Date(minStart * 1000).toISOString(), "to", new Date(maxEnd * 1000).toISOString());
+    
+    // Get month boundaries between min and max (same as buildTimeline)
+    const monthEdges: number[] = [];
+    let cursor = minStart;
+    const endLimit = maxEnd;
+    while (cursor < endLimit) {
+      monthEdges.push(cursor);
+      cursor = nextMonthFirstEpoch(cursor);
+    }
+    
+    const boundaries = Array.from(new Set([...rawEdges, ...monthEdges])).sort(
+      (a, b) => a - b
+    );
+
+    const slices: Array<{ start: number; end: number; qty: number }> = [];
+    for (let i = 0; i < boundaries.length - 1; ++i) {
+      const start = boundaries[i];
+      const end = boundaries[i + 1];
+      if (start >= end) continue;
+      const qty = windows.filter((w) => w.start <= start && w.end >= end).length;
+      slices.push({ start, end, qty });
+    }
+    
+    console.log("[WH] All slices created:", slices.length);
+    
+    // Only include slices that end after the current start
+    segments = slices.filter((s) => s.end > currentStart);
+    console.log("[WH] Slices ending after currentStart:", segments.length);
+  }
+  
+  console.log("[WH] Total segments after filtering:", segments.length);
+  
+  // Consolidate consecutive segments with same qty into single phases to stay under 10-phase limit
+  const consolidatedSegments: Array<{ start: number; end: number; qty: number }> = [];
+  for (const seg of segments) {
+    const last = consolidatedSegments[consolidatedSegments.length - 1];
+    if (last && last.qty === seg.qty && last.end === seg.start) {
+      // Merge with previous segment
+      last.end = seg.end;
+    } else {
+      // New segment
+      consolidatedSegments.push({ ...seg });
+    }
+  }
+  
+  console.log("[WH] Consolidated segments:", consolidatedSegments.length);
+  
+  // Convert consolidated segments to phases
+  const phases: PhaseUpdate[] = consolidatedSegments.map((seg, idx) => {
     const phase: PhaseUpdate = {
       items:
         seg.qty > 0
@@ -144,7 +223,7 @@ export async function upsertScheduleFromSubscription(
       end_date: seg.end,
       proration_behavior: "create_prorations",
     };
-    // Ensure the first phase has a start_date
+    // First phase needs start_date to anchor the schedule
     if (idx === 0 && preservedCurrent && typeof preservedCurrent.start_date === "number") {
       phase.start_date = preservedCurrent.start_date;
     }
@@ -170,6 +249,18 @@ export async function upsertScheduleFromSubscription(
   }
 
   // Apply the phases to the schedule
+  console.log("[WH] Applying phases to schedule:", {
+    scheduleId: scheduleObj.id,
+    phaseCount: phases.length,
+    phases: phases.map((p, idx) => ({
+      index: idx,
+      hasStartDate: !!p.start_date,
+      hasEndDate: !!p.end_date,
+      itemCount: p.items?.length || 0,
+      items: p.items?.map(i => ({ price: i.price, qty: i.quantity }))
+    }))
+  });
+  
   try {
     await stripe.subscriptionSchedules.update(scheduleObj.id, {
       phases,

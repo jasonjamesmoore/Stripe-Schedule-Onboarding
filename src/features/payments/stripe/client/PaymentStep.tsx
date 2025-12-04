@@ -81,10 +81,12 @@ export function PaymentStep({
   plan?: Plan;
   services: ServiceAddr[];
   canPay: boolean;
-  onSuccess: () => void;
+  onSuccess: (subscriptionId?: string, customerId?: string) => void;
   account?: AccountType;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const latestReq = useRef(0);
@@ -242,6 +244,8 @@ export function PaymentStep({
 
       const json = await res.json();
       if (latestReq.current !== reqId) return; // ignore stale
+      setSubscriptionId(json.subscriptionId || null);
+      setCustomerId(json.customerId || null);
       setClientSecret(json.clientSecret); // -> Phase 2
     } catch (e) {
       if (latestReq.current !== reqId) return;
@@ -334,6 +338,8 @@ export function PaymentStep({
           <PaymentForm
             canPay={canPay}
             onSuccess={onSuccess}
+            subscriptionId={subscriptionId}
+            customerId={customerId}
             hideButton={Boolean(slot && confirmAPI)} // hide only when portal & api are ready
             expose={(api) =>
               setConfirmAPI((prev) =>
@@ -371,15 +377,19 @@ function PaymentForm({
   onSuccess,
   hideButton,
   expose,
+  subscriptionId,
+  customerId,
 }: {
   canPay: boolean;
-  onSuccess: () => void;
+  onSuccess: (subscriptionId?: string, customerId?: string) => void;
   hideButton?: boolean;
   expose?: (api: {
     confirm: () => void;
     canConfirm: boolean;
     busy: boolean;
   }) => void;
+  subscriptionId?: string | null;
+  customerId?: string | null;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -399,8 +409,8 @@ function PaymentForm({
       setErr(error.message ?? "Payment failed");
       return;
     }
-    onSuccess();
-  }, [stripe, elements, onSuccess]);
+    onSuccess(subscriptionId || undefined, customerId || undefined);
+  }, [stripe, elements, onSuccess, subscriptionId, customerId]);
 
   // let the parent (PaymentStep) render the button elsewhere
   const canConfirm = Boolean(canPay && stripe && elements && !busy);

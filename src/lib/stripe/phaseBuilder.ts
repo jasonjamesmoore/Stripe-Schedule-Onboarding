@@ -195,12 +195,23 @@ export function buildSignupPhases(opts: {
   console.log("[PHASE] nowEpoch:", nowEpoch, "nextFirst:", nextFirst);
   
   const fullTimeline = buildTimeline(services, selections, nowEpoch);
+  console.log("[PHASE] fullTimeline.length:", fullTimeline.length);
+  console.log("[PHASE] fullTimeline slices:", fullTimeline.map(s => ({ 
+    start: new Date(s.start * 1000).toISOString(), 
+    end: new Date(s.end * 1000).toISOString(), 
+    count: s.seasonalActiveCount 
+  })));
 
-  // seasonal windows that START within 90d from next 1st
+  // seasonal windows that START within 180 days from next 1st (inclusive)
+  const lookbackEnd = nextFirst + NINETY_DAYS_SEC;
+  console.log("[PHASE] Filter range: nextFirst:", new Date(nextFirst * 1000).toISOString(), 
+              "to lookbackEnd:", new Date(lookbackEnd * 1000).toISOString());
+  
   const timelineAfter = fullTimeline.filter(
-    (s) => s.start >= nextFirst && s.start < nextFirst + NINETY_DAYS_SEC
+    (s) => s.start >= nextFirst && s.start <= nextFirst + NINETY_DAYS_SEC
   );
 
+  console.log("[PHASE] timelineAfter.length:", timelineAfter.length);
   console.log("timelineAfter:", JSON.stringify(timelineAfter, null, 2));
 
   // seasonal qty overlapping the pre-phase [now, nextFirst)

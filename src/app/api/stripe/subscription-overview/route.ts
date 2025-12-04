@@ -114,8 +114,10 @@ export async function GET(req: Request) {
       }
     }
 
-    // 3) Build a human-friendly “calendar” for phases
+    // 3) Build a human-friendly "calendar" for phases
 
+    console.log('[API] Schedule phases count:', schedule?.phases?.length || 0);
+    
     const lastPhase: SchedulePhase | undefined =
       schedule && Array.isArray(schedule.phases) && schedule.phases.length
         ? (schedule.phases[schedule.phases.length - 1] as SchedulePhase)
@@ -140,17 +142,28 @@ export async function GET(req: Request) {
                 end: toIso(schedule.current_phase.end_date ?? null),
               }
             : null,
-          phases: (schedule.phases ?? []).map((p: SchedulePhase) => ({
-            end: toIso(p.end_date ?? null),
-            // For readability, only expose price IDs and quantities
-            items: (p.items ?? []).map((i) => ({
-              price:
-                typeof i.price === "string"
-                  ? i.price
-                  : (i.price?.id as string | undefined),
-              quantity: i.quantity ?? 0,
-            })),
-          })),
+          phases: (schedule.phases ?? []).map((p: SchedulePhase) => {
+            console.log('[API] Phase:', {
+              start_date: p.start_date,
+              end_date: p.end_date,
+              items: p.items?.map(i => ({ 
+                price: typeof i.price === 'string' ? i.price : i.price?.id,
+                qty: i.quantity 
+              }))
+            });
+            return {
+              start: toIso(p.start_date ?? null),
+              end: toIso(p.end_date ?? null),
+              // For readability, only expose price IDs and quantities
+              items: (p.items ?? []).map((i) => ({
+                price:
+                  typeof i.price === "string"
+                    ? i.price
+                    : (i.price?.id as string | undefined),
+                quantity: i.quantity ?? 0,
+              })),
+            };
+          }),
           last_phase_open_ended: lastPhaseIsOpenEnded,
         }
       : null;
@@ -191,11 +204,34 @@ export async function GET(req: Request) {
       };
     }
 
+    // 5) Include price metadata for proper labeling on client
+    const priceMetadata: Record<string, { name: string; type: 'base' | 'seasonal' }> = {};
+    
+    // Collect all price IDs from subscription items
+    for (const item of sub.items.data) {
+      const priceId = typeof item.price === 'string' ? item.price : item.price.id;
+      const priceObj = typeof item.price === 'string' ? null : item.price;
+      
+      if (priceId && !priceMetadata[priceId]) {
+        // Determine if base or seasonal by looking at nickname or product
+        const nickname = priceObj?.nickname || '';
+        const isBase = nickname.toLowerCase().includes('trash') || 
+                       nickname.toLowerCase().includes('base') ||
+                       (item.quantity || 0) > 1; // base typically has quantity = # of properties
+        
+        priceMetadata[priceId] = {
+          name: isBase ? 'Base Trash Service' : 'Seasonal 2nd Pickup',
+          type: isBase ? 'base' : 'seasonal'
+        };
+      }
+    }
+
     return NextResponse.json({
       subscriptionId: sub.id,
       customerId: resolvedCustomerId,
       nextInvoice,
       schedule: schedSummary,
+      priceMetadata,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
