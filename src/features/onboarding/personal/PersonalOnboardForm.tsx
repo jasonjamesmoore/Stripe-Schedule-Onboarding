@@ -146,6 +146,55 @@ export function PersonalOnboardForm() {
     remove: removeService,
   } = useFieldArray({ control, name: "addresses.services" });
 
+  // Pre-fill demo data function
+  const fillDemoData = () => {
+    // Fill contact info
+    form.setValue("contact.firstName", "Demo");
+    form.setValue("contact.lastName", "User");
+    form.setValue("contact.email", "demo@example.com");
+    form.setValue("contact.phone", "555-0100");
+    
+    // Fill billing address
+    form.setValue("addresses.billing.line1", "123 Demo Street");
+    form.setValue("addresses.billing.city", "Wilmington");
+    form.setValue("addresses.billing.state", "NC");
+    form.setValue("addresses.billing.postalCode", "28401");
+    form.setValue("addresses.billing.country", "US");
+    
+    // Clear existing services first
+    while (serviceFields.length > 0) {
+      removeService(0);
+    }
+    
+    // Add demo service addresses
+    appendService({
+      line1: "456 Beach Road",
+      line2: "",
+      city: "Topsail Beach",
+      state: "NC",
+      postalCode: "28445",
+      country: "US",
+    });
+    
+    appendService({
+      line1: "789 Ocean Drive",
+      line2: "",
+      city: "North Topsail Beach",
+      state: "NC",
+      postalCode: "28460",
+      country: "US",
+    });
+    
+    appendService({
+      line1: "321 Main Street",
+      line2: "",
+      city: "Wilmington",
+      state: "NC",
+      postalCode: "28401",
+      country: "US",
+    });
+  };
+
   // Watch fields needed by PaymentStep
   const email = useWatch({ control, name: "contact.email" });
   const selectedPlan = useWatch({ control, name: "plan" }) as Plan | undefined;
@@ -313,6 +362,28 @@ export function PersonalOnboardForm() {
         {/* ===== STEP 1: Member Billing + Contact ===== */}
         {step === 0 && (
           <div className="space-y-8">
+            {/* Demo Data Button */}
+            <div className="rounded-lg bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-blue-900 mb-1">
+                    🚀 Quick Demo
+                  </div>
+                  <div className="text-sm text-blue-700">
+                    Auto-fill with test data to see seasonal pricing in action
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  onClick={fillDemoData}
+                  variant="default"
+                  className="bg-gradient-to-r from-[#234854] to-[#60C9EC] hover:opacity-90"
+                >
+                  Fill Demo Data
+                </Button>
+              </div>
+            </div>
+            
             {/* Contact */}
             <div className="flex text-xl font-semibold">Member Information</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

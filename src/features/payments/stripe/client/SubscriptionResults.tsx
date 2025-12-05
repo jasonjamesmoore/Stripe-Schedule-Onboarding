@@ -43,7 +43,7 @@ type ScheduleSummary = {
   last_phase_open_ended: boolean;
 };
 
-type PriceMetadata = Record<string, { name: string; type: 'base' | 'seasonal' }>;
+type PriceMetadata = Record<string, { name: string; type: 'base' | 'seasonal'; amount: number }>;
 
 type SubscriptionOverview = {
   subscriptionId: string;
@@ -320,6 +320,15 @@ export function SubscriptionResults({
                   item.price && priceMetadata[item.price]?.type === 'seasonal'
                 );
 
+                // Calculate total monthly cost
+                let totalMonthlyCost = 0;
+                if (baseItem?.price && priceMetadata[baseItem.price]) {
+                  totalMonthlyCost += (priceMetadata[baseItem.price].amount * baseItem.quantity);
+                }
+                if (seasonalItem?.price && priceMetadata[seasonalItem.price]) {
+                  totalMonthlyCost += (priceMetadata[seasonalItem.price].amount * seasonalItem.quantity);
+                }
+
                 return (
                   <div
                     key={idx}
@@ -334,14 +343,19 @@ export function SubscriptionResults({
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {phase.start && phase.end ? (
-                          <>{formatDate(phase.start)} – {formatDate(phase.end)}</>
-                        ) : isOpenEnded ? (
-                          "No end date"
-                        ) : (
-                          `Until ${formatDate(phase.end)}`
-                        )}
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-blue-600">
+                          {money(totalMonthlyCost)}/month
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {phase.start && phase.end ? (
+                            <>{formatDate(phase.start)} – {formatDate(phase.end)}</>
+                          ) : isOpenEnded ? (
+                            "No end date"
+                          ) : (
+                            `Until ${formatDate(phase.end)}`
+                          )}
+                        </div>
                       </div>
                     </div>
 

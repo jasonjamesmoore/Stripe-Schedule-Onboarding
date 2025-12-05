@@ -111,7 +111,15 @@ export function DemoGuide() {
             🎯 How to test this app:
           </p>
           <p className="text-blue-800">
-            Add multiple service addresses using the zip codes below. Mix in-season and out-of-season properties to see how the subscription schedule adapts pricing automatically.
+            <strong>Click &quot;Fill Demo Data&quot; and proceed to step 3.</strong><br />
+            <br />
+            <strong>Prefer to test manually? Follow these steps:</strong><br />
+            <br />
+            1. Enter demo Customer Data <br />
+            <br />
+            2. Add multiple service addresses using the zip codes below. Mix in-season and out-of-season properties to see how the subscription schedule adapts pricing automatically.<br />
+            <br />
+            3. Complete the payment with Stripe Test Card Data to view the generated subscription schedule with phase breakdowns.<br />
           </p>
         </div>
 

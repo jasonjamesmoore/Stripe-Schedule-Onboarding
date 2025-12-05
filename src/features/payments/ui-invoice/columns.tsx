@@ -9,6 +9,7 @@ export type InvoiceUI = {
   serviceAddress: string
   seasonal_2nd: boolean
   monthly: string
+  hasSeasonalService: boolean  // Added to indicate if seasonal service is available
 }
 
 export type InvoiceTableMeta = {
@@ -17,6 +18,7 @@ export type InvoiceTableMeta = {
 }
 
 export function createColumns(): ColumnDef<InvoiceUI, unknown>[] {
+
   return [
     {
       accessorKey: "serviceAddress",
@@ -44,7 +46,15 @@ export function createColumns(): ColumnDef<InvoiceUI, unknown>[] {
       cell: ({ row, table }) => {
         const meta = table.options.meta as InvoiceTableMeta | undefined
         const locked = !!meta?.clientLocked
-        const { idx, seasonal_2nd } = row.original
+        const { idx, seasonal_2nd, hasSeasonalService } = row.original
+
+        if (!hasSeasonalService) {
+          return (
+            <div className="text-sm text-muted-foreground">
+              No seasonal service available
+            </div>
+          )
+        }
 
         return (
           <div className="flex items-center gap-4">

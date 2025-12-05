@@ -17,6 +17,7 @@ import {
   type InvoiceTableMeta,
 } from "@/features/payments/ui-invoice/columns";
 import type { AccountType } from "@/features/payments/stripe/server/prices";
+import { resolveRuleForAddress } from "@/lib/serviceAreas/serviceAreas";
 
 type ServiceAddr = {
   line1?: string;
@@ -188,11 +189,22 @@ export function PaymentStep({
   const tableData = useMemo<InvoiceUI[]>(() => {
     return services.map((s, idx) => {
       const r = rows[idx] ?? defaultRow;
+      
+      // Check if this address has seasonal service
+      const rule = resolveRuleForAddress({
+        line1: s.line1 ?? "",
+        city: s.city ?? "",
+        state: s.state ?? "",
+        zip: s.postalCode ?? "",
+      });
+      const hasSeasonalService = !!rule?.season;
+      
       return {
         idx,
         serviceAddress: labelFor(s) || "Service Address",
         seasonal_2nd: r.seasonal_2nd, // drives the Seasonal checkbox
         monthly: unit ? money(rowAmount(r), unit.currency) : "—",
+        hasSeasonalService,
       };
     });
   }, [services, rows, defaultRow, unit, rowAmount]);
@@ -334,7 +346,32 @@ export function PaymentStep({
           )}
         </>
       ) : options ? (
-        <Elements stripe={stripePromise} options={options} key={clientSecret}>
+        <>
+          <div className="rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 p-4 space-y-3">
+            <div className="font-semibold text-purple-900 flex items-center gap-2">
+              💳 Stripe Test Card Data
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Card Number:</span>
+                <div className="font-mono font-semibold">4242 4242 4242 4242</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Expiry:</span>
+                <div className="font-mono font-semibold">Any future date</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">CVC:</span>
+                <div className="font-mono font-semibold">Any 3 digits</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">ZIP:</span>
+                <div className="font-mono font-semibold">Any 5 digits</div>
+              </div>
+            </div>
+          </div>
+
+          <Elements stripe={stripePromise} options={options} key={clientSecret}>
           <PaymentForm
             canPay={canPay}
             onSuccess={onSuccess}
@@ -353,6 +390,7 @@ export function PaymentStep({
             }
           />
         </Elements>
+        </>
       ) : null}
       {clientSecret &&
         slot &&
