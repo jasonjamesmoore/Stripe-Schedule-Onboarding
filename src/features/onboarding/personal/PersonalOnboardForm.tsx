@@ -132,13 +132,6 @@ export function PersonalOnboardForm() {
 
   const { control } = form;
 
-  // Team field array
-  // const {
-  //   fields: teamFields,
-  //   append: appendTeam,
-  //   remove: removeTeam,
-  // } = useFieldArray({ control, name: "team" });
-
   // Service addresses field array
   const {
     fields: serviceFields,
@@ -299,38 +292,6 @@ export function PersonalOnboardForm() {
   const onSubmit: SubmitHandler<FormValues> = () => {
     // No-op: finalization happens via Stripe PaymentStep success + webhook.
   };
-
-  // const onSubmit: SubmitHandler<FormValues> = (values) => {
-  //   console.log("[onSubmit] ENTER", { step, values });
-  //   if (step !== 3) return; // only submit on last step
-  //   try {
-  //     const parsed = OnboardingSchema.safeParse(values);
-  //     if (!parsed.success) {
-  //       const map = collectErrorsFromTree(treeify(parsed.error));
-
-  //       if (map[""]?.[0]) {
-  //         form.setError("root", { type: "zod", message: map[""][0] });
-  //       }
-
-  //       for (const [path, messages] of Object.entries(map)) {
-  //         if (!path) continue;
-  //         const msg = messages[0];
-  //         if (msg) {
-  //           form.setError(path as FieldPath<FormValues>, {
-  //             type: "zod",
-  //             message: msg,
-  //           });
-  //         }
-  //       }
-  //       return;
-  //     }
-  //     const data = parsed.data;
-  //     console.log("Submitting Payload:", data);
-  //     // API CALL LIVES HERE
-  //   } catch (error) {
-  //     console.error("Submit Failed:", error);
-  //   }
-  // };
 
   /** progress width % */
   const progress = ((step + 1) / steps.length) * 100;

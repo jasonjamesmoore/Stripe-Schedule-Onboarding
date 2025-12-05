@@ -12,22 +12,7 @@ export const PRICE_BY_PLAN: Record<AccountType, Record<Plan, string>> = {
     seasonal_2nd: "price_1S3JWNIr0MMYHEqPjtUJqjdn"
   },
   business: {
-   trash: "price_1SEEKZ02heDK9w4zWLUKNrPi",
-    seasonal_2nd: "price_1SEELH02heDK9w4zU4HxRJuY"
+   trash: "price_1SFH2VIr0MMYHEqPCpKeXFay",
+    seasonal_2nd: "price_1SFH2vIr0MMYHEqPQVv2YG9e"
   }
 } as const;
-
-
-// //-------------------------
-// //Test Prices
-// //-------------------------
-// export const PRICE_BY_PLAN: Record<AccountType, Record<Plan, string>> = {
-//   individual: {
-//     trash: "price_1S184RIr0MMYHEqPhw5fJ8IG",
-//     seasonal_2nd: "price_1S3JWNIr0MMYHEqPjtUJqjdn"
-//   },
-//   business: {
-//    trash: "price_1SFH2VIr0MMYHEqPCpKeXFay",
-//     seasonal_2nd: "price_1SFH2vIr0MMYHEqPQVv2YG9e"
-//   }
-// } as const;

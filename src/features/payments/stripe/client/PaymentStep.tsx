@@ -107,6 +107,8 @@ export function PaymentStep({
 
   // per-row selection (two checkboxes)
   type RowSel = { trash: boolean; seasonal_2nd: boolean };
+
+  // The plan determines initial checkbox state for seasonal add-ons.
   const defaultRow = useMemo<RowSel>(
     () => ({ trash: true, seasonal_2nd: plan === "seasonal_2nd" }),
     [plan]

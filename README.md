@@ -2,7 +2,7 @@
 
 A Next.js application demonstrating dynamic subscription scheduling with Stripe, featuring seasonal pricing adjustments based on service location and time of year.
 
-## 🎯 What This App Demonstrates
+## What This App Demonstrates
 
 This application showcases a **trash valet service** onboarding flow with sophisticated Stripe integration:
 
@@ -14,17 +14,17 @@ This application showcases a **trash valet service** onboarding flow with sophis
 
 ### Key Technical Features
 
-- ✅ **Stripe Subscription Schedules API** - Building multi-phase subscriptions with varying line items
-- ✅ **Prorated billing** - Handling mid-month signups with accurate prorations
-- ✅ **Metadata-driven configuration** - Storing per-address rules in subscription metadata
-- ✅ **Invoice preview API** - Showing upcoming charges before payment
-- ✅ **React Hook Form** with Zod validation for complex multi-step forms
-- ✅ **TypeScript** throughout for type safety
-- ✅ **Server-side price calculations** to prevent client-side manipulation
+- **Stripe Subscription Schedules API** - Building multi-phase subscriptions with varying line items
+- **Prorated billing** - Handling mid-month signups with accurate prorations
+- **Metadata-driven configuration** - Storing per-address rules in subscription metadata
+- **Invoice preview API** - Showing upcoming charges before payment
+- **React Hook Form** with Zod validation for complex multi-step forms
+- **TypeScript** throughout for type safety
+- **Server-side price calculations** to prevent client-side manipulation
 
-## 🚀 Demo Instructions
+##  Demo Instructions
 
-**⚠️ This app uses Stripe Test Mode** - No real charges will be made.
+** This app uses Stripe Test Mode** - No real charges will be made.
 
 ### Test Zip Codes
 
@@ -32,10 +32,10 @@ To see the seasonal pricing in action, use these test addresses when creating a 
 
 | City | Zip Code | Seasonal Service | Status (Dec 2025) | Pickup Days |
 |------|----------|------------------|-------------------|-------------|
-| **Topsail Beach** | 28445 | ✅ Yes | 🟢 In Season | Mon + Thu (seasonal) |
-| **Surf City** | 28445 | ✅ Yes | 🟢 In Season | Tue + Fri (seasonal) |
-| **North Topsail Beach** | 28460 | ✅ Yes | 🟡 Out of Season | Wed + Sat (when in season) |
-| **Wilmington** | 28401 | ❌ No | ⚪ N/A | Tue only |
+| **Topsail Beach** | 28445 | Yes |  In Season | Mon + Thu (seasonal) |
+| **Surf City** | 28445 |  Yes | In Season | Tue + Fri (seasonal) |
+| **North Topsail Beach** | 28460 |  Yes |  Out of Season | Wed + Sat (when in season) |
+| **Wilmington** | 28401 |  No |  N/A | Tue only |
 
 ### Recommended Test Flow
 
@@ -59,14 +59,15 @@ To see the seasonal pricing in action, use these test addresses when creating a 
 
 ## 🏗️ Technology Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
+- **Framework**: Next.js 15.5 (App Router)
+- **Language**: TypeScript 5
+- **Runtime**: React 19
 - **Payments**: Stripe (Subscriptions, Invoices, Payment Intents)
-- **Form Management**: React Hook Form + Zod
-- **Styling**: Tailwind CSS + shadcn/ui components
+- **Form Management**: React Hook Form 7 + Zod 4
+- **Styling**: Tailwind CSS 4 + shadcn/ui components
 - **State Management**: React hooks
 
-## 📋 Getting Started
+## Getting Started
 
 ### Prerequisites
 
