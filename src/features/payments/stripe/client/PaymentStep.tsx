@@ -476,7 +476,16 @@ function PaymentForm({
   return (
     <div className="space-y-4">
       <PaymentElement />
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {err && (
+        <div className="space-y-2">
+          <p className="text-sm text-red-600">{err}</p>
+          {err.includes("fetch") && (
+            <p className="text-xs text-amber-600">
+              💡 If you see a network error, please disable ad blockers or try incognito mode. Stripe payment forms are sometimes blocked by browser extensions.
+            </p>
+          )}
+        </div>
+      )}
       {!hideButton && (
         <div className="flex items-center justify-end pt-4">
           <Button

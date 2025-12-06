@@ -141,10 +141,14 @@ export function PersonalOnboardForm() {
 
   // Pre-fill demo data function
   const fillDemoData = () => {
+    // Generate unique email with timestamp
+    const timestamp = Date.now();
+    const email = `demo+${timestamp}@example.com`;
+    
     // Fill contact info
     form.setValue("contact.firstName", "Demo");
     form.setValue("contact.lastName", "User");
-    form.setValue("contact.email", "demo@example.com");
+    form.setValue("contact.email", email);
     form.setValue("contact.phone", "555-0100");
     
     // Fill billing address

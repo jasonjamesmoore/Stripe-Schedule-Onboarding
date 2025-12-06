@@ -51,6 +51,7 @@ To see the seasonal pricing in action, use these test addresses when creating a 
    - Notice how the monthly price includes seasonal add-ons for in-season properties
    - Use Stripe test card: `4242 4242 4242 4242`
    - Any future expiry date and any 3-digit CVC
+   - **Note**: If you see payment errors, disable ad blockers or use incognito mode
 
 4. **View subscription schedule** (Step 4)
    - See the complete subscription breakdown
