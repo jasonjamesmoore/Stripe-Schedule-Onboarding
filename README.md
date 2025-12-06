@@ -40,6 +40,7 @@ To see the seasonal pricing in action, use these test addresses when creating a 
 ### Recommended Test Flow
 
 1. **Fill out contact information** (Step 1)
+   - Click "Fill Demo Data" button for quick setup, or
    - Use any test email address
    
 2. **Add multiple service addresses** (Step 2)
@@ -48,17 +49,21 @@ To see the seasonal pricing in action, use these test addresses when creating a 
    - The app will show you the pickup schedule for each address
 
 3. **Review pricing & complete payment** (Step 3)
-   - Notice how the monthly price includes seasonal add-ons for in-season properties
-   - Use Stripe test card: `4242 4242 4242 4242`
-   - Any future expiry date and any 3-digit CVC
-   - **Note**: If you see payment errors, disable ad blockers or use incognito mode
+   - **Select "2nd Day Valet" for one or more properties** to see seasonal pricing in action
+   - Review the pricing table showing base service + seasonal add-ons
+   - Click "Continue to payment"
+   - **Look for the purple "Stripe Test Card Data" section** above the payment form
+   - Use test card: `4242 4242 4242 4242`
+   - Any future expiry date, any 3-digit CVC, any 5-digit ZIP
+   - Click "Pay & Subscribe"
 
 4. **View subscription schedule** (Step 4)
    - See the complete subscription breakdown
    - View upcoming invoice with line items
    - See how phases change as properties enter/exit seasonal windows
+   - Notice different monthly prices in different phases based on seasonal status
 
-## 🏗️ Technology Stack
+## Technology Stack
 
 - **Framework**: Next.js 15.5 (App Router)
 - **Language**: TypeScript 5
@@ -85,9 +90,8 @@ npm install
 cp .env.example .env.local
 ```
 
-### Environment Variables
-
-Add your Stripe test keys to `.env.local`:
+### Environment Variable
+Stripe test keys to `.env.local`:
 
 ```bash
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...

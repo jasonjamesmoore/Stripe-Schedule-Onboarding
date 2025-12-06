@@ -297,6 +297,17 @@ export function PaymentStep({
         <div className="text-sm font-medium">
           Build your Trash Valet Subscription Plan:
         </div>
+        
+        {!clientSecret && (
+          <div className="rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-500 p-3">
+            <div className="text-sm">
+              <span className="font-semibold text-green-900">💡 Demo Tip:</span>
+              <span className="text-green-700 ml-2">
+                Select &ldquo;2nd Day Valet&rdquo; for properties with seasonal service to see how the subscription schedule adjusts pricing throughout the year!
+              </span>
+            </div>
+          </div>
+        )}
 
         <DataTable columns={columns} data={tableData} meta={meta} />
 
@@ -476,16 +487,7 @@ function PaymentForm({
   return (
     <div className="space-y-4">
       <PaymentElement />
-      {err && (
-        <div className="space-y-2">
-          <p className="text-sm text-red-600">{err}</p>
-          {err.includes("fetch") && (
-            <p className="text-xs text-amber-600">
-              💡 If you see a network error, please disable ad blockers or try incognito mode. Stripe payment forms are sometimes blocked by browser extensions.
-            </p>
-          )}
-        </div>
-      )}
+      {err && <p className="text-sm text-red-600">{err}</p>}
       {!hideButton && (
         <div className="flex items-center justify-end pt-4">
           <Button
