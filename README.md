@@ -106,7 +106,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-## 🔑 Key Code Locations
+## Key Code Locations
 
 - **Service Area Rules**: `src/lib/serviceAreas/serviceAreas.ts` - Zip code to seasonal window mapping
 - **Phase Builder**: `src/lib/stripe/phaseBuilder.ts` - Subscription schedule creation logic
@@ -114,7 +114,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - **Invoice Preview**: `src/app/api/stripe/subscription-overview/route.ts` - Fetch subscription details
 - **Onboarding Form**: `src/features/onboarding/personal/PersonalOnboardForm.tsx` - Multi-step wizard
 
-## 💡 How Seasonal Pricing Works
+## How Seasonal Pricing Works
 
 1. Each service address is matched to a `ServiceAreaRule` based on city or zip code
 2. Rules define:
@@ -127,7 +127,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
    - Each phase has different pricing based on seasonal status
 4. The subscription automatically transitions between phases on the configured dates
 
-## 🧪 Testing Seasonal Transitions
+## Testing Seasonal Transitions
 
 The app is configured with 2025 seasonal dates:
 - **Topsail Beach**: May 26 - Sep 1
@@ -136,14 +136,14 @@ The app is configured with 2025 seasonal dates:
 
 To test different scenarios, you can modify these dates in `src/lib/serviceAreas/serviceAreas.ts`.
 
-## 📝 Notes
+## Notes
 
 - This is a **portfolio demonstration** using Stripe test mode
 - No real credit cards are charged
 - Service areas and dates are fictional for demonstration purposes
 - The app shows real Stripe API integration patterns that would work in production
 
-## 🔗 Learn More
+## Learn More
 
 - [Stripe Subscription Schedules](https://stripe.com/docs/billing/subscriptions/subscription-schedules)
 - [Next.js Documentation](https://nextjs.org/docs)
