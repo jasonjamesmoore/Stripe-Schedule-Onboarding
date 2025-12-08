@@ -202,13 +202,16 @@ export function buildSignupPhases(opts: {
     count: s.seasonalActiveCount 
   })));
 
-  // seasonal windows that START within 180 days from next 1st (inclusive)
+  // Include slices that overlap the period from nextFirst to nextFirst + 90 days
+  // This catches:
+  // - Slices that start in the future (s.start >= nextFirst)
+  // - Slices that started in the past but are still active (s.end > nextFirst)
   const lookbackEnd = nextFirst + NINETY_DAYS_SEC;
   console.log("[PHASE] Filter range: nextFirst:", new Date(nextFirst * 1000).toISOString(), 
               "to lookbackEnd:", new Date(lookbackEnd * 1000).toISOString());
   
   const timelineAfter = fullTimeline.filter(
-    (s) => s.start >= nextFirst && s.start <= nextFirst + NINETY_DAYS_SEC
+    (s) => s.end > nextFirst && s.start <= lookbackEnd
   );
 
   console.log("[PHASE] timelineAfter.length:", timelineAfter.length);

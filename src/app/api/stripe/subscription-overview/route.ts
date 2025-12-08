@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { serverOnly } from "@/lib/validation/server-only";
 import { getStripe } from "@/lib/stripe/stripe"; // ✅ use the shared helper
+import { PRICE_BY_PLAN } from "@/features/payments/stripe/server/prices";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -207,24 +208,38 @@ export async function GET(req: Request) {
     // 5) Include price metadata for proper labeling on client
     const priceMetadata: Record<string, { name: string; type: 'base' | 'seasonal'; amount: number }> = {};
     
-    // Collect all price IDs from subscription items
+    // Get the actual price IDs from the price map to identify which is which
+    const PRICE_BASE = PRICE_BY_PLAN.individual.trash;
+    const PRICE_SEASONAL = PRICE_BY_PLAN.individual.seasonal_2nd;
+    
+    // Collect all price IDs from subscription items and schedule phases
+    const allPriceIds = new Set<string>();
+    
+    // From subscription items
     for (const item of sub.items.data) {
       const priceId = typeof item.price === 'string' ? item.price : item.price.id;
-      const priceObj = typeof item.price === 'string' ? null : item.price;
-      
-      if (priceId && !priceMetadata[priceId] && priceObj) {
-        // Determine if base or seasonal by looking at nickname or product
-        const nickname = priceObj.nickname || '';
-        const isBase = nickname.toLowerCase().includes('trash') || 
-                       nickname.toLowerCase().includes('base') ||
-                       (item.quantity || 0) > 1; // base typically has quantity = # of properties
-        
-        priceMetadata[priceId] = {
-          name: isBase ? 'Base Trash Service' : 'Seasonal 2nd Pickup',
-          type: isBase ? 'base' : 'seasonal',
-          amount: priceObj.unit_amount || 0
-        };
+      if (priceId) allPriceIds.add(priceId);
+    }
+    
+    // From schedule phases (if exists)
+    if (schedule?.phases) {
+      for (const phase of schedule.phases) {
+        for (const item of phase.items || []) {
+          const priceId = typeof item.price === 'string' ? item.price : item.price?.id;
+          if (priceId) allPriceIds.add(priceId);
+        }
       }
+    }
+    
+    // Build metadata using the authoritative price IDs
+    for (const priceId of allPriceIds) {
+      const price = await stripe.prices.retrieve(priceId);
+      
+      priceMetadata[priceId] = {
+        name: priceId === PRICE_BASE ? 'Base Trash Service' : 'Seasonal 2nd Pickup',
+        type: priceId === PRICE_BASE ? 'base' : 'seasonal',
+        amount: price.unit_amount || 0
+      };
     }
 
     return NextResponse.json({
