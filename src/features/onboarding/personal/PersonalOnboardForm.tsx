@@ -149,7 +149,7 @@ export function PersonalOnboardForm() {
     form.setValue("contact.firstName", "Demo");
     form.setValue("contact.lastName", "User");
     form.setValue("contact.email", email);
-    form.setValue("contact.phone", "555-0100");
+    form.setValue("contact.phone", "555-555-0100");
     
     // Fill billing address
     form.setValue("addresses.billing.line1", "123 Demo Street");
