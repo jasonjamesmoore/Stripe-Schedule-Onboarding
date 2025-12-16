@@ -776,6 +776,7 @@ export function PersonalOnboardForm() {
               email={email || undefined}
               plan={selectedPlan}
               services={services ?? []}
+              billing={billing}
               canPay={Boolean(agreed) && serviceCount > 0}
               onSuccess={(subId, custId) => {
                 setSubscriptionId(subId || null);

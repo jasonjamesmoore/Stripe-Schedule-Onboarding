@@ -74,6 +74,7 @@ export function PaymentStep({
   email,
   plan,
   services,
+  billing,
   canPay,
   onSuccess,
   account = "individual",
@@ -81,6 +82,7 @@ export function PaymentStep({
   email?: string;
   plan?: Plan;
   services: ServiceAddr[];
+  billing?: ServiceAddr;
   canPay: boolean;
   onSuccess: (subscriptionId?: string, customerId?: string) => void;
   account?: AccountType;
@@ -243,6 +245,7 @@ export function PaymentStep({
           email,
           plan,
           services,
+          billing,
           account,
           selections: rows.map((r) => ({ seasonal_2nd: r.seasonal_2nd })),
         }),

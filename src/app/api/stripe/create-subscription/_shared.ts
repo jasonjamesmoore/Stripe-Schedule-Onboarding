@@ -22,7 +22,8 @@ export function makeHandlers(account: AccountType) {
     email: string;
     plan: Plan;
     services: Array<Record<string, unknown>>;
-    selections: Array<{ seasonal_2nd?: boolean }>;
+    billing?: Record<string, unknown>;
+    selections: Array<{ seasonal_2nd?: boolean }>
   };
   type PhaseWithDuration = Stripe.SubscriptionScheduleCreateParams.Phase & {
     duration?: { interval: "month"; interval_count: number };
@@ -121,7 +122,7 @@ export function makeHandlers(account: AccountType) {
 
       try {
         const body = (await req.json()) as Body;
-        const { email, services, selections } = body;
+        const { email, services, billing, selections } = body;
         emailForLog = email;
         const addrMini = services.map((s) => ({
           c: String(s.city ?? ""),
@@ -192,6 +193,37 @@ export function makeHandlers(account: AccountType) {
         const existing = await stripe.customers.list({ email, limit: 1 });
         const customer =
           existing.data[0] ?? (await stripe.customers.create({ email }));
+
+        // Store full service addresses in customer metadata
+        const fullAddresses = services.map((svc, idx) => ({
+          index: idx,
+          line1: String(svc.line1 ?? ""),
+          line2: String(svc.line2 ?? ""),
+          city: String(svc.city ?? ""),
+          state: String(svc.state ?? ""),
+          postal_code: cleanZip(String(svc.postalCode ?? svc.zip ?? "")),
+          seasonal_selected: selections[idx]?.seasonal_2nd ?? false,
+        }));
+        
+        const addressesJson = JSON.stringify(fullAddresses);
+        const addressChunks = chunkForMetadata("service_addresses", addressesJson);
+
+        // Update customer with billing address (or first service address as fallback)
+        const primaryAddress = billing ?? services[0];
+        await stripe.customers.update(customer.id, {
+          address: {
+            line1: String(primaryAddress.line1 ?? ""),
+            line2: String(primaryAddress.line2 ?? ""),
+            city: String(primaryAddress.city ?? ""),
+            state: String(primaryAddress.state ?? ""),
+            postal_code: cleanZip(String(primaryAddress.postalCode ?? primaryAddress.zip ?? "")),
+            country: "US", // Assuming US addresses
+          },
+          metadata: {
+            ...addressChunks,
+            service_address_count: String(services.length),
+          },
+        });
 
         // Idempotency keys (separate endpoints)
         const first = phases[0] as PhaseWithDuration | undefined;
